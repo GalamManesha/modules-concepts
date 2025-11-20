@@ -9,5 +9,18 @@ variable "ami" {
   type        = string
   default     = "ami-087d1c9a513324697"
 }
+variable "region" {
+  type    = string
+  default = "ap-south-1"
+}
+variable "region" {
+  type    = string
+  default = "ap-south-1"
+}
+variable "env" {
+  type = string
+  default = "dev"
+  
+}
 
 
