@@ -2,11 +2,12 @@ provider "aws" {
   region = var.region
 }
 
-resource "aws_instance" "example" {
-  instance_type = var.instance_type
-  key_name      = var.key_name
+resource "aws_instance" "this" {
   ami           = var.ami
+  instance_type = var.instance_type
+
   tags = {
-    Name = var.tags
+    Name = "dev-ec2"
   }
 }
+
