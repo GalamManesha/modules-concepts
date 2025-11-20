@@ -1,84 +1,58 @@
 pipeline {
-  agent any
+    agent any
 
-  environment {
-    AWS_DEFAULT_REGION = "ap-south-1"
-    // Do NOT set AWS creds here with credentials() if you will use withCredentials below.
-  }
-
-  stages {
-    stage('Checkout infra repo') {
-      steps {
-        // checkout infra repo which contains root main.tf and module/ folder
-        checkout([
-          $class: 'GitSCM',
-          branches: [[name: "*/main"]],
-          userRemoteConfigs: [[
-            url: "https://github.com/GalamManesha/modules-concepts.git"
-          ]]
-        ])
-      }
+    environment {
+        AWS_DEFAULT_REGION = "ap-south-1"
     }
 
-    // If your repo already contains module/modules/module, you don't need to fetch from elsewhere.
-    // Remove the fetch stage. If you DO need to fetch a separate modules repo, I can provide that snippet.
+    stages {
 
-    stage('Terraform Init') {
-      steps {
-        dir('module') {
-          withCredentials([usernamePassword(credentialsId: 'aws-cred',
-                                           usernameVariable: 'AWS_ACCESS_KEY_ID',
-                                           passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-            sh '''
-              set -e
-              terraform --version
-              terraform init -input=false -no-color
-            '''
-          }
+        stage('Checkout infra repo') {
+            steps {
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: "*/main"]],
+                    userRemoteConfigs: [[
+                        url: "https://github.com/GalamManesha/modules-concepts.git"
+                    ]]
+                ])
+            }
         }
-      }
-    }
 
-    stage('Terraform Plan') {
-      steps {
-        dir('module') {
-          withCredentials([usernamePassword(credentialsId: 'aws-cred',
-                                           usernameVariable: 'AWS_ACCESS_KEY_ID',
-                                           passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-            sh '''
-              set -e
-              terraform plan -out=tfplan -input=false -no-color
-              terraform show -no-color tfplan > plan.txt || true
-            '''
-            archiveArtifacts artifacts: 'module/plan.txt', onlyIfSuccessful: true
-          }
+        stage('Terraform Init') {
+            steps {
+                dir('module') {
+                    withCredentials([usernamePassword(credentialsId: 'aws-cred',
+                                                     usernameVariable: 'AWS_ACCESS_KEY_ID',
+                                                     passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        sh 'terraform init'
+                    }
+                }
+            }
         }
-      }
-    }
 
-    stage('Terraform Apply') {
-      steps {
-        dir('module') {
-          withCredentials([usernamePassword(credentialsId: 'aws-cred',
-                                           usernameVariable: 'AWS_ACCESS_KEY_ID',
-                                           passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-            sh '''
-              set -e
-              terraform apply -input=false -auto-approve tfplan
-            '''
-          }
+        stage('Terraform Plan') {
+            steps {
+                dir('module') {
+                    withCredentials([usernamePassword(credentialsId: 'aws-cred',
+                                                     usernameVariable: 'AWS_ACCESS_KEY_ID',
+                                                     passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        sh 'terraform plan -out=tfplan'
+                    }
+                }
+            }
         }
-      }
-    }
-  }
 
-  post {
-    always {
-      dir('module') {
-        sh 'terraform state list || true'
-      }
+        stage('Terraform Apply') {
+            steps {
+                dir('module') {
+                    withCredentials([usernamePassword(credentialsId: 'aws-cred',
+                                                     usernameVariable: 'AWS_ACCESS_KEY_ID',
+                                                     passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        sh 'terraform apply -auto-approve tfplan'
+                    }
+                }
+            }
+        }
     }
-    success { echo "EC2 created successfully." }
-    failure { echo "Pipeline failed — check logs." }
-  }
 }
