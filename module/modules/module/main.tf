@@ -7,7 +7,7 @@ resource "aws_instance" "this" {
   instance_type = var.instance_type
 
   tags = {
-    Name        = "dev-ec2-1"
+    Name        = "dev-ec2"
     Environment = "dev"
   }
 }
