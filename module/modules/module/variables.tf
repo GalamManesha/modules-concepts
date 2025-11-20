@@ -10,7 +10,7 @@ variable "key_name" {
 
 variable "ami" {
   type    = string
-  default = "ami-001ce22601d4c605f"
+  default = "ami-0078a63645c7b8a87"
 }
 
 variable "tags" {
