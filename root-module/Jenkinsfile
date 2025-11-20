@@ -1,4 +1,3 @@
-
 pipeline {
   agent any
 
@@ -16,7 +15,6 @@ pipeline {
   stages {
     stage('Checkout infra repo') {
       steps {
-        // checkout the repo that contains this Jenkinsfile and module/ directory
         checkout scm
       }
     }
