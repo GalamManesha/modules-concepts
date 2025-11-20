@@ -90,3 +90,17 @@ pipeline {
             '''
           }
         }
+      }
+    }
+  }
+
+  post {
+    always {
+      dir('module') {
+        sh 'terraform state list || true'
+      }
+    }
+    success { echo "EC2 created successfully." }
+    failure { echo "Pipeline failed — check logs." }
+  }
+}
