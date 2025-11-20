@@ -22,5 +22,10 @@ variable "env" {
   default = "dev"
   
 }
+variable "tags" {
+  default = dev_ec2
+  type = string
+  
+}
 
 
